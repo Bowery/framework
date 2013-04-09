@@ -1,8 +1,8 @@
 {
-  "name": "express",
-  "description": "Sinatra inspired web development framework",
+  "name": "bowery",
+  "description": "The Framework",
   "version": "3.1.1",
-  "author": "TJ Holowaychuk <tj@vision-media.ca>",
+  "author": "Bowery Boys <concierge@bowerygroup.com>",
   "contributors": [
     {
       "name": "TJ Holowaychuk",
