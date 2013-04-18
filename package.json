@@ -23,7 +23,7 @@
   ],
   "dependencies": {
     "connect": "2.7.4",
-    "bowery-cache": "0.0.2",
+    "bowery-cache": "0.0.3",
     "commander": "0.6.1",
     "range-parser": "0.0.4",
     "mkdirp": "~0.3.4",
