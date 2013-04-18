@@ -1,7 +1,7 @@
 # Bowery
 The Web Framework.
 ## Getting Started
-The only external dependency is [Node.js](http://nodejs.org/). To get started open your terminal and type:
+The only external dependency is [Node.js](http://nodejs.org/). Once that's installed, you can get started withw:
 ```
 $ npm install bowery -g
 $ bowery create projectName

@@ -1,9 +1,21 @@
 {
   "name": "bowery",
   "description": "The Framework",
-  "version": "3.3.3",
+  "version": "3.3.4",
   "author": "Bowery Boys <concierge@bowerygroup.com>",
   "contributors": [
+    {
+      "name": "David Byrd",
+      "email": "david@byrdhou.se"
+    },
+    {
+      "name": "Steve Kaliski",
+      "email": "sjkaliski@gmail.com"
+    },
+    {
+      "name": "Vivek Patel",
+      "email": "1.vivekpatel@gmail.com"
+    },
     {
       "name": "TJ Holowaychuk",
       "email": "tj@vision-media.ca"
@@ -47,20 +59,15 @@
     "supertest": "0.0.1"
   },
   "keywords": [
-    "express",
+    "bowery",
     "framework",
-    "sinatra",
-    "web",
-    "rest",
-    "restful",
-    "router",
-    "app",
-    "api"
+    "hoodies",
+    "scotch"
   ],
-  "repository": "git://github.com/visionmedia/express",
+  "repository": "git://github.com/Bowery/framework",
   "main": "index",
   "bin": {
-    "express": "./bin/express"
+    "express": "./bin/bowery"
   },
   "scripts": {
     "prepublish": "npm prune",
