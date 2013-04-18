@@ -1,164 +1,325 @@
-![express logo](http://f.cl.ly/items/0V2S1n0K1i3y1c122g04/Screen%20Shot%202012-04-11%20at%209.59.42%20AM.png)
+# Bowery
+The Web Framework.
+## Getting Started
+The only external dependency is [Node.js](http://nodejs.org/). To get started open your terminal and type:
+```
+$ npm install bowery -g
+$ bowery create projectName
+$ bowery server
+```
+A browser window will open with the starter application running. Any changes made to the application will automatically be updated by the localserver.
+When you're ready to push the app to production, run `bowery deploy`. Once you have authenticated, your application will be live on the internet and you will be given a url to access it.
 
-  Fast, unopinionated, minimalist web framework for [node](http://nodejs.org). [![Build Status](https://secure.travis-ci.org/visionmedia/express.png)](http://travis-ci.org/visionmedia/express) [![Dependency Status](https://gemnasium.com/visionmedia/express.png)](https://gemnasium.com/visionmedia/express)
-
-```js
-var express = require('express');
-var app = express();
-
-app.get('/', function(req, res){
-  res.send('Hello World');
-});
-
-app.listen(3000);
+## Structure
+In a directory named `projectName` you will see a file structure like this:
+```
+/assets
+/models
+/views
+/controllers
+/helpers
+routes.js
+package.json
+README.md
+```
+## Scaffolding
+Rails style scaffolding is available by running:
+```
+$ bowery generate scaffold User name:String emails:[String] password:String salt:String
 ```
 
-## Installation
+## Models
 
-    $ npm install -g express
+### Format
+Models in The Web Framework are just Javascript Objects with optional instance methods. For example, a user object defined in `/models/user.js` might look like:
+```javascript
+module.exports = function (app) {
 
-## Quick Start
+  /**
+   * @private {function} used as default salt for password hashing 
+   */
+  var uuid = require('node-uuid'),
+      crypto = require('crypto');
 
- The quickest way to get started with express is to utilize the executable `express(1)` to generate an application as shown below:
+  /**
+   * @private {function(string, string)} uses the passwordHash 
+   * helper to hash passwords.
+   * @param {string} password is the string that the user enters.
+   * @param {function(string, function)} salt is used to hash password.
+   */
+  function hash (password, salt) {
+    return crypto
+          .createHmac('sha256', salt)
+          .update(password)
+          .digest('hex');
+  }
 
- Create the app:
+  return {
 
-    $ npm install -g express
-    $ express /tmp/foo && cd /tmp/foo
+    /* Public Variables */
+    schema: {
+      name: {
+        type: String,// Type can be strings, numbers, boolean, or sets of the previous types.
+        required: true
+      },
+      emails: {
+        type: String,
+        required: true,
+        unique: true
+      },
+      password: {
+        type: String,
+        required: true
+      },
+      salt: {
+        type: String,
+        required: true,
+        default: uuid
+      }
+    },
 
- Install dependencies:
+    /* Public Methods */
+    methods: {
 
-    $ npm install
+      /**
+       * Sets the password field as a hash of the given password.
+       * @param {string} password is the as the user enters it.
+       */
+      setPassword: function (password) {
+        this.password = hash(password, this.salt)
+      },
 
- Start the server:
+      /**
+       * Checks to see if the user's password is valid.
+       * @param {string} password is the as the user enters it.
+       * @return {boolean} if the password is valid
+       */
+      authenticate: function (password) {
+        return this.password == hash(password, this.salt)
+      }
+    },
 
-    $ node app
+    /* Static Methods */
+    statics: {
 
-## Features
+      /**
+       * Searches for Users by their email
+       * @param {string} email of the users you're
+       *        searching for.
+       * @param {functioncallback(error, users)
+       */
+      findByEmail: function (email, callback) {
+        this.findOne({email: email}, callback);
+      },
 
-  * Built on [Connect](http://github.com/senchalabs/connect)
-  * Robust routing
-  * HTTP helpers (redirection, caching, etc)
-  * View system supporting 14+ template engines
-  * Content negotiation
-  * Focus on high performance
-  * Environment based configuration
-  * Executable for generating applications quickly
-  * High test coverage
+      /**
+       * Lists all of the users.
+       * @param {function(Object, Object)}
+       */
+      all: function (callback) {
+        this.find({}, callback);
+      }
+    }
+    
+  }
+}
+```
+### Caching
+Behind the scenes, The Web Framework's Data Layer is caching query results.
 
-## Philosophy
+If you want to do manual caching, `app.cache.write('key', 'value')` and `app.cache.read('key')` are available. Inside the models Methods, `this.cacheKey` is available. It generally takes the form `model/id-timestamp` where the timestamp will change each time the instance is updated. 
 
-  The Express philosophy is to provide small, robust tooling for HTTP servers. Making
-  it a great solution for single page applications, web sites, hybrids, or public
-  HTTP APIs.
+### Real Time
+When a model is updated, a socket.io event will be triggered to subscribing clients. The channel name will follow the convention `model.id.action` where model is the name of the model and action can be `create`, `update`, `destroy`. 
 
-  Built on Connect you can use _only_ what you need, and nothing more, applications
-  can be as big or as small as you like, even a single file. Express does
-  not force you to use any specific ORM or template engine. With support for over
-  14 template engines via [Consolidate.js](http://github.com/visionmedia/consolidate.js)
-  you can quickly craft your perfect framework.
+To manually emit events to subscribing clients, use `app.events.emit('channel-name', {some:object})`.
 
-## More Information
+## Controllers
 
-  * Join #express on freenode
-  * [Google Group](http://groups.google.com/group/express-js) for discussion
-  * Follow [tjholowaychuk](http://twitter.com/tjholowaychuk) on twitter for updates
-  * Visit the [Wiki](http://github.com/visionmedia/express/wiki)
-  * [日本語ドキュメンテーション](http://hideyukisaito.com/doc/expressjs/) by [hideyukisaito](https://github.com/hideyukisaito)
-  * [Русскоязычная документация](http://express-js.ru/)
-  * Run express examples [online](https://runnable.com/express)
+In a controller you will be able to access models via the app variable. For example, `/controllers/users.js` might look like:
 
-## Viewing Examples
+```javascript
+// Copyright 2013 Bowery Group
+/**
+ * @fileoverview The users controllers provides an
+ *    API for managing users.
+ */
+module.exports = function (app) {
+  var User = app.models.user;
 
-Clone the Express repo, then install the dev dependencies to install all the example / test suite deps:
+  return  {
 
-    $ git clone git://github.com/visionmedia/express.git --depth 1
-    $ cd express
-    $ npm install
+    /**
+     * Lists all of the users.
+     * @param {Request} req is the Request variable.
+     * @param {Response} res is the Response variable.
+     */
+    index: function (req, res) {
+      User.all(function (err, users) {
+         res.render(err ? 'error' 'users/index', err || { users:users });
+      });
+    },
 
-then run whichever tests you want:
+    /**
+     * Renders a template for creating a new user.
+     * new Users.
+     * @param {Request} req is the Request variable.
+     * @param {Response} res is the Response variable.
+     */
+    new: function (req, res) {
+      res.render('users/new');
+    },
 
-    $ node examples/content-negotiation
+    /**
+     * Accepts a new user object from a POST request
+     * creates a new user and redirects to the index.
+     * @param {Request} req is the Request variable.
+     * @param {Response} res is the Response variable.
+     */
+    create: function (req, res) {
+      var a = new User(req.body);
+      a.save(function (err) {
+        err ? res.render('error', err) : res.redirect('/users')
+      });
+    },
 
-## Running Tests
+    /**
+     * Shows the user with the id given in the url.
+     * @param {Request} req is the Request variable.
+     * @param {Response} res is the Response variable.
+     */
+    show: function (req, res) {
+      User.findOne({ _id: req.params.id }, function (err, user) {
+        res.render(err ? 'error': 'users/show', err || user);
+      });
+    },
 
-To run the test suite first invoke the following command within the repo, installing the development dependencies:
+    /**
+     * Updates the user object that is send via a POST request.
+     * @param {Request} req is the Request variable.
+     * @param {Response} res is the Response variable.
+     */
+    update: function (req, res) {
+      User.update({ id: req.params.id}, req.body, function (err, user) {
+        err ? res.render('error', err) : res.redirect('/users/' + user.id);
+      });
+    },
 
-    $ npm install
+    /**
+     * Deletes the user object of the ID and is DELETEed
+     * @param {Request} req is the Request variable.
+     * @param {Response} res is the Response variable.
+     */
+    delete: function (req, res) {
+      User.findOneAndRemove({ _id: req.params.id }, function (err) {
+        res.json(err || { success: true });
+      });
+    },
 
-then run the tests:
+    /**
+     * Renders an edit form for the user with the id in the url.
+     * @param {Request} req is the Request variable.
+     * @param {Response} res is the Response variable.
+     */
+    edit: function (req, res) {
+      User.findOne({ _id: req.params.id }, function (err, user) {
+        res.render(err ? 'error' : 'users/edit', err || user);
+      });
+    },
 
-    $ make test
+    /**
+     * Checks to see if the request is coming from a user.
+     * @param {Request} req is the Request variable.
+     * @param {Response} res is the Response variable.
+     * @param next is the function that will send the
+     *        request to the next method.
+     */
+    auth: function (req, res, next) {
+      req.session && req.session.user ? next() : res.redirect('/login');
+    }
+  }
+}
+```
 
-## Contributors
+## Routes
+The `routes.js` file for the users controller would look like:
+
+```javascript
+module.exports = {
+  '/': {
+    'get': 'auth!users.index'
+  },
+  '/login': {
+    'get': 'auth.login',
+    'post': 'auth.connect'
+  },
+  '/logout': {
+    'get': 'auth.logout'
+  },
+  '/users':{
+    'get': 'users.index',
+    'post': 'users.create'
+  },
+  '/users/new':{
+    'get': 'users.new'
+  },
+  '/users/:id':{
+    'get': 'users.show',
+    'post': 'users.update',
+    'del': 'users.delete'
+  },
+  '/users/:id/edit':{
+    'get': 'users.edit'
+  }
+}
+
 
 ```
-project: express
-commits: 3559
-active : 468 days
-files  : 237
-authors:
- 1891	Tj Holowaychuk          53.1%
- 1285	visionmedia             36.1%
-  182	TJ Holowaychuk          5.1%
-   54	Aaron Heckmann          1.5%
-   34	csausdev                1.0%
-   26	ciaranj                 0.7%
-   21	Robert Sköld            0.6%
-    6	Guillermo Rauch         0.2%
-    3	Dav Glass               0.1%
-    3	Nick Poulden            0.1%
-    2	Randy Merrill           0.1%
-    2	Benny Wong              0.1%
-    2	Hunter Loftis           0.1%
-    2	Jake Gordon             0.1%
-    2	Brian McKinney          0.1%
-    2	Roman Shtylman          0.1%
-    2	Ben Weaver              0.1%
-    2	Dave Hoover             0.1%
-    2	Eivind Fjeldstad        0.1%
-    2	Daniel Shaw             0.1%
-    1	Matt Colyer             0.0%
-    1	Pau Ramon               0.0%
-    1	Pero Pejovic            0.0%
-    1	Peter Rekdal Sunde      0.0%
-    1	Raynos                  0.0%
-    1	Teng Siong Ong          0.0%
-    1	Viktor Kelemen          0.0%
-    1	ctide                   0.0%
-    1	8bitDesigner            0.0%
-    1	isaacs                  0.0%
-    1	mgutz                   0.0%
-    1	pikeas                  0.0%
-    1	shuwatto                0.0%
-    1	tstrimple               0.0%
-    1	ewoudj                  0.0%
-    1	Adam Sanderson          0.0%
-    1	Andrii Kostenko         0.0%
-    1	Andy Hiew               0.0%
-    1	Arpad Borsos            0.0%
-    1	Ashwin Purohit          0.0%
-    1	Benjen                  0.0%
-    1	Darren Torpey           0.0%
-    1	Greg Ritter             0.0%
-    1	Gregory Ritter          0.0%
-    1	James Herdman           0.0%
-    1	Jim Snodgrass           0.0%
-    1	Joe McCann              0.0%
-    1	Jonathan Dumaine        0.0%
-    1	Jonathan Palardy        0.0%
-    1	Jonathan Zacsh          0.0%
-    1	Justin Lilly            0.0%
-    1	Ken Sato                0.0%
-    1	Maciej Małecki          0.0%
-    1	Masahiro Hayashi        0.0%
+
+### Filters
+The filter before `!controller.method` is the name of a function in the controller that will be run before the `controller.method` is called. The third parameter in that function will be a `next()` function that should be called when you want the `controller.method` to be called.
+
+### Parameters
+`req.params` is an object containing the parameters in the url. For example, the id in `/users/:id` can be accessed by `req.params.id` in the `users.show` method.
+
+`req.body` is an object containing the body of the request. When the browser makes a POST request to `/users`, the `users.create` method has access to the body of the request via `req.body`.
+
+## Helpers
+Helpers are functions that you want to have access to in your controllers, models, & views. You can access them via `app.helpers`.
+
+## Assets
+The `assets` directory is the root of a static asset server. In development, everything in there will be served at `http://localhost/assets/`. In production, everything will be minified and put on a CDN. The Web Framework will change the url if you use the proper view helper.
+
+### Images
+Images in The Web Framework are responsive by default. The routing layer detects the user agent and send the appropriate image, while javascript is used to resize the images while the window size changes.
+
+You can generate an image tag in the views by using the `imageTag` helper:
 ```
+<%= image('path/in/assets', {class: 'class names', id: 'idName'}) %>
+```
+
+### Stylesheets
+Stylesheets are written in [LESS](http://lesscss.org/) and should be in the `/assets/stylesheets` directory. In development, you can update them and they will automatically reload on every request that they are changed. In production, they will be minified and put on a CDN. To make sure your link tags automatically take into account the url change between development and production use th `stylesheet` helper:
+```
+<%= stylesheet('path/in/assets/stylesheets') %>
+```
+
+### Client Side Javascript
+Client side scripts are also minified and put on a CDN in production. During development, they should be placed in `/assets/javascripts`. To account for the url change between development and production use the `script` helper:
+```
+<%= script('path/in/assets/javascripts') %>
+```
+
+### Prefetch.js
+By default, relative links in views will be prefetched once a page is rendered. When the user clicks on the link, the html will be swapped out on the client side and the URL will change via pushState. This significantly improves page load time. Before spending time building a javascript heavy front end, see if Prefetch.js is enough for your needs.
+
+
 
 ## License
 
 (The MIT License)
 
-Copyright (c) 2009-2012 TJ Holowaychuk &lt;tj@vision-media.ca&gt;
+Copyright (c) 2009-2012 Bowery Boys &lt;concierge@bowerygroup.com&gt;
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
