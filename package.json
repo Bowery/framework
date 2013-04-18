@@ -1,7 +1,7 @@
 {
   "name": "bowery",
   "description": "The Framework",
-  "version": "3.3.4",
+  "version": "3.3.5",
   "author": "Bowery Boys <concierge@bowerygroup.com>",
   "contributors": [
     {
@@ -67,7 +67,7 @@
   "repository": "git://github.com/Bowery/framework",
   "main": "index",
   "bin": {
-    "express": "./bin/bowery"
+    "bowery": "./bin/bowery"
   },
   "scripts": {
     "prepublish": "npm prune",
