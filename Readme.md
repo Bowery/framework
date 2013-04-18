@@ -17,7 +17,6 @@ In a directory named `projectName` you will see a file structure like this:
 /models
 /views
 /controllers
-/helpers
 routes.js
 package.json
 README.md

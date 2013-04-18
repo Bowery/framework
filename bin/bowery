@@ -1,0 +1,96 @@
+#!/usr/bin/env node
+var fs = require('fs'),
+    exec = require('child_process').exec
+
+var methods = {
+  
+  new: function (path) {
+    console.log('Creating new bowery application: ' + path)
+    fs.mkdirSync('./' + path)
+    exec('cp -R ' + __dirname + '/../example/ ' + path, function (err, out) {
+      if (err) return console.log('error', err)
+      console.log('Success!')
+    })
+  },
+
+  server: function () {
+    var bowery = require('bowery'),
+    fs = require('fs'),
+    app = bowery()
+
+    app.configure(function () {
+      app.set('views', __dirname + '/views')
+      app.set('view engine', 'ejs')
+      app.use(bowery.favicon())
+      app.use(bowery.logger('dev'))
+      app.use(bowery.bodyParser())
+      app.use(bowery.methodOverride())
+      app.use(bowery.cookieParser("some secret"))
+      // app.use(app.compiler) //TODO (steve) ?
+      app.use(app.router)
+      app.use(bowery.compress())
+      app.use(bowery.static(__dirname + '/public'))
+    })
+
+    app.configure('development', function(){
+      app.use(bowery.errorHandler())
+    })
+
+    app.configure('production', function() {
+      // app.use(app.deploy) //TODO (steve) what is this?
+    })
+
+
+    app.locals.stylesheet = function(path, options) {
+      var domain = process.env.CDN_DOMAIN
+    }
+
+    //TODO app.events
+
+    var models = {}, controllers = {}
+
+    // Load Models.
+    fs.readdirSync('./models').forEach(function (file) {
+      if (file[0] != '.') { // protects agains hidden files
+        var name = file.slice(0, -3).charAt(0).toUpperCase() + file.slice(0, -3).slice(1),
+            model = require('bowery-models')(name, app)
+        models[name.toLowerCase()] = model
+      }
+    })
+
+    // Set models to app before passing app to controllers.
+    app.models = models
+
+    // Load Controllers.
+    fs.readdirSync('./controllers').forEach(function (file) {
+      if (file[0] != '.') // protects agains hidden files
+        controllers[file.slice(0, -3)] = require('./controllers/' + file)(app)
+    })
+
+    // Load Routes.
+    var routes = require('./routes')
+
+    for (var route in routes) {
+      for (var method in routes[route]) {
+        var m = routes[route][method].split('.')
+
+        // If a route has a filter...
+        if (routes[route][method].indexOf('!') !== -1) {
+          var b = routes[route][method].split('!')
+          m[0] = m[0].split('!')[1]
+          app[method](route, controllers[m[0]][b[0]], m[2] ? controllers[m[0]][m[1]][m[2]] : controllers[m[0]][m[1]])
+        // Otherwise...
+        } else {
+          app[method](route, m[2] ? controllers[m[0]][m[1]][m[2]] : controllers[m[0]][m[1]])
+        }
+      }
+    }
+
+    app.listen(3000)
+  }
+}
+
+!function (args) {
+  var command = args.shift()
+  methods[command] && methods[command].apply(methods, args)
+}(process.argv.slice(2))
