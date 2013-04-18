@@ -1,0 +1,12 @@
+<form method="POST" action="/users/<%= id %>">
+  <label for="name">Name</label>
+  <input type="text" name="name" value="<%= name %>" required>
+
+  <label for="email">Email</label>
+  <input type="text" name="email" value="<%= email %>" required>
+
+  <label for="password">Password</label>
+  <input type="password" name="password" value="<%= password %>" required>
+
+  <input type="submit" value="Update User">
+</form>
