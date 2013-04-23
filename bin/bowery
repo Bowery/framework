@@ -57,7 +57,7 @@ var methods = {
     var models = {}, controllers = {}
 
     // Load Models.
-    fs.readdirSync('./models').forEach(function (file) {
+    fs.readdirSync(__dirname + '/models').forEach(function (file) {
       if (file[0] != '.') { // protects agains hidden files
         var name = file.slice(0, -3).charAt(0).toUpperCase() + file.slice(0, -3).slice(1)
         models[name.toLowerCase()] = bowery.createModel(name, app)
@@ -68,13 +68,13 @@ var methods = {
     app.models = models
 
     // Load Controllers.
-    fs.readdirSync('./controllers').forEach(function (file) {
+    fs.readdirSync(__dirname + '/controllers').forEach(function (file) {
       if (file[0] != '.') // protects agains hidden files
-        controllers[file.slice(0, -3)] = require('./controllers/' + file)(app)
+        controllers[file.slice(0, -3)] = require(__dirname + '/controllers/' + file)(app)
     })
 
     // Load Routes.
-    var routes = require('./routes')
+    var routes = require(__dirname + '/routes')
 
     for (var route in routes) {
       for (var method in routes[route]) {
