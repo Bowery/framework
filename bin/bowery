@@ -47,10 +47,10 @@ var methods = {
       app.use(bowery.errorHandler())
     })
 
-    app.locals.stylesheet = function(path, options) {
-      return app.get('env') == 'production' ? 
-        process.env.CDN_DOMAIN + path
-    }
+    // app.locals.stylesheet = function(path, options) {
+    //   return app.get('env') == 'production' ? 
+    //     process.env.CDN_DOMAIN + path
+    // }
 
     //TODO app.events
 
