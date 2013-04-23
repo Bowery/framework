@@ -1,10 +1,21 @@
 #!/usr/bin/env node
+
+//  ____                                                   
+// /\  _`\                                                 
+// \ \ \L\ \    ___   __  __  __     __   _ __   __  __    
+//  \ \  _ <'  / __`\/\ \/\ \/\ \  /'__`\/\`'__\/\ \/\ \   
+//   \ \ \L\ \/\ \L\ \ \ \_/ \_/ \/\  __/\ \ \/ \ \ \_\ \  
+//    \ \____/\ \____/\ \___x___/'\ \____\\ \_\  \/`____ \ 
+//     \/___/  \/___/  \/__//__/   \/____/ \/_/   `/___/> \
+//                                                   /\___/
+//                                                   \/__/ 
+
 var fs = require('fs'),
     exec = require('child_process').exec
 
 var methods = {
   
-  new: function (path) {
+  create: function (path) {
     console.log('Creating new bowery application: ' + path)
     fs.mkdirSync('./' + path)
     exec('cp -R ' + __dirname + '/../example/ ' + path, function (err, out) {
@@ -36,13 +47,9 @@ var methods = {
       app.use(bowery.errorHandler())
     })
 
-    app.configure('production', function() {
-      // app.use(app.deploy) //TODO (steve) what is this?
-    })
-
-
     app.locals.stylesheet = function(path, options) {
-      var domain = process.env.CDN_DOMAIN
+      return app.get('env') == 'production' ? 
+        process.env.CDN_DOMAIN + path
     }
 
     //TODO app.events
@@ -52,9 +59,8 @@ var methods = {
     // Load Models.
     fs.readdirSync('./models').forEach(function (file) {
       if (file[0] != '.') { // protects agains hidden files
-        var name = file.slice(0, -3).charAt(0).toUpperCase() + file.slice(0, -3).slice(1),
-            model = require('bowery-models')(name, app)
-        models[name.toLowerCase()] = model
+        var name = file.slice(0, -3).charAt(0).toUpperCase() + file.slice(0, -3).slice(1)
+        models[name.toLowerCase()] = bowery.createModel(name, app)
       }
     })
 
@@ -87,6 +93,18 @@ var methods = {
     }
 
     app.listen(3000)
+  },
+
+  scaffold: function (name) {
+
+  },
+
+  deploy: function () {
+    console.log("OOOOOOOOOH SHIT.");
+  },
+
+  login: function () {
+    
   }
 }
 

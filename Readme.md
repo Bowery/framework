@@ -1,7 +1,7 @@
 # Bowery
 The Web Framework.
 ## Getting Started
-The only external dependency is [Node.js](http://nodejs.org/). Once that's installed, you can get started withw:
+The only external dependency is [Node.js](http://nodejs.org/). Once that's installed, you can get started with:
 ```
 $ npm install bowery -g
 $ bowery create projectName
@@ -24,7 +24,7 @@ README.md
 ## Scaffolding
 Rails style scaffolding is available by running:
 ```
-$ bowery generate scaffold User name:String emails:[String] password:String salt:String
+$ bowery scaffold User name:String emails:[String] password:String salt:String
 ```
 
 ## Models

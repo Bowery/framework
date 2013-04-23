@@ -45,7 +45,10 @@
     "methods": "0.0.1",
     "send": "0.1.0",
     "cookie-signature": "0.0.1",
-    "debug": "*"
+    "debug": "*",
+    "node-uuid": "~1.4.0",
+    "mongoose": "~3.6.4",
+    "ejs": "~0.8.3"
   },
   "devDependencies": {
     "ejs": "*",

@@ -1,2 +1,2 @@
-# Bowery Framework Example
-This example application replicates some of the functionality of Twitter using the Bowery Framework.
+# Bowery Framework Project
+You can see more documentation at [bowerygroup.com](http://bowerygroup.com).
