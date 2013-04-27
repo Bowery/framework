@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "bowery",
   "description": "The Framework",
   "version": "3.3.9",
@@ -34,21 +35,21 @@
     }
   ],
   "dependencies": {
-    "connect": "2.7.4",
-    "bowery-cache": "0.0.3",
+    "connect": "2.7.6",
     "commander": "0.6.1",
     "range-parser": "0.0.4",
-    "mkdirp": "~0.3.4",
+    "mkdirp": "0.3.4",
     "cookie": "0.0.5",
-    "buffer-crc32": "~0.2.1",
+    "buffer-crc32": "0.2.1",
     "fresh": "0.1.0",
     "methods": "0.0.1",
     "send": "0.1.0",
-    "cookie-signature": "0.0.1",
+    "cookie-signature": "1.0.1",
     "debug": "*",
     "node-uuid": "~1.4.0",
     "mongoose": "~3.6.4",
-    "ejs": "~0.8.3"
+    "ejs": "~0.8.3",
+    "qs": "0.6.1"
   },
   "devDependencies": {
     "ejs": "*",
@@ -59,7 +60,7 @@
     "should": "*",
     "connect-redis": "*",
     "github-flavored-markdown": "*",
-    "supertest": "0.0.1"
+    "supertest": "0.6.0"
   },
   "keywords": [
     "bowery",
