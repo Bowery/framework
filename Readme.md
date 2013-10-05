@@ -1,5 +1,5 @@
-# Bowery
-The Web Framework.
+# A Web Framework
+Aa project with Steve Kaliski that led to [Bowery](http://bowery.io).
 ## Getting Started
 The only external dependency is [Node.js](http://nodejs.org/). Once that's installed, you can get started with:
 ```
@@ -317,7 +317,7 @@ By default, relative links in views will be prefetched once a page is rendered. 
 
 (The MIT License)
 
-Copyright (c) 2009-2012 Bowery Boys &lt;concierge@bowerygroup.com&gt;
+Copyright (c) 2009-2012 Bowery Software, LLC. &lt;concierge@bowerygroup.com&gt;
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
